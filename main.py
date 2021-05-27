@@ -30,8 +30,10 @@ def get_page(start, count, cursor, connection):
 
     all_leads = []
 
+    i = 1
     for candidate in results:
-        fetch_functions.process_candidate(candidate, all_leads, cursor)
+        fetch_functions.process_candidate(candidate, all_leads, cursor, i, count)
+        i += 1
 
     # page done - ask if user wants to keep looking at next pages
     keep_going = input("keep searching? (Y/N): ")

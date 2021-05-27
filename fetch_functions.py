@@ -35,7 +35,10 @@ def get_connections(profile_id, num_connections, user_obj, cursor):
         user_obj["mutuals_list"].append(candidate["fullName"])
 
         # add mutual to db if not present already
-        cursor.execute(helper.INSERT_NEW_USER, (mutual_obj["id"], mutual_obj["first_name"], mutual_obj["last_name"], mutual_obj["position"]["title"], mutual_obj["position"]["company_name"]))
+        if mutual_obj["position"] == None:
+            cursor.execute(helper.INSERT_NEW_USER, (mutual_obj["id"], mutual_obj["first_name"], mutual_obj["last_name"], None, None))
+        else:
+            cursor.execute(helper.INSERT_NEW_USER, (mutual_obj["id"], mutual_obj["first_name"], mutual_obj["last_name"], mutual_obj["position"]["title"], mutual_obj["position"]["company_name"]))
         # adds connection to potential lead
         cursor.execute(helper.INSERT_NEW_CONNECTION, (profile_id, mutual_obj["id"]))
 
@@ -44,7 +47,7 @@ def get_connections(profile_id, num_connections, user_obj, cursor):
 # functions that process the JSON data ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # processes a candidate from the search page
-def process_candidate(candidate, all_leads, cursor):
+def process_candidate(candidate, all_leads, cursor, i, count):
     connectionsKey = "sharedConnectionsHighlight"
     num_connections = 0
     if (connectionsKey in candidate):
@@ -62,7 +65,7 @@ def process_candidate(candidate, all_leads, cursor):
     # add to sqlite db
     cursor.execute(helper.INSERT_NEW_USER, (profile_id, user_obj["first_name"], user_obj["last_name"], user_obj["current_positions"][0]["title"], user_obj["current_positions"][0]["company_name"]))
 
-    print("\ncandidate processed...\n")
+    print(f"\ncandidate {i}/{count} processed...\n")
 
 # extracts the current positions of a user given their user object
 def get_current_positions(candidate):
@@ -77,6 +80,9 @@ def get_current_positions(candidate):
 
 # extracts the current positions of a mutual connection given their user object
 def get_current_position_mutual(candidate):
+    if not "matchedPosition" in candidate:
+        return None
+
     matched_pos = candidate["matchedPosition"]
     
     info = {}
